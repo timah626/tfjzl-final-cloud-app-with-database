@@ -10,7 +10,6 @@
 </head>
 
 <body>
-    <!-- Navigation bar -->
     <nav class="navbar navbar-light bg-light">
         <div class="container-fluid">
             <div class="navbar-header">
@@ -39,7 +38,6 @@
         </div>
     </nav>
 
-    <!-- Page content -->
     <div class="container-fluid">
             <h2>{{ course.name }}</h2>
             <div class="card-columns-vertical">
@@ -50,7 +48,49 @@
                     </div>
                 {% endfor %}
             </div>
-            <!-- Course detail template changes go here -->
-    </div>
+            
+            {% if user.is_authenticated %}
+                <div class="mt-4">
+                    <button class="btn btn-primary btn-block mb-3" type="button" data-toggle="collapse" data-target="#exam-section" aria-expanded="false" aria-controls="exam-section">
+                        Start Exam
+                    </button>
+
+                    <div class="collapse" id="exam-section">
+                        <div class="card card-body shadow-sm">
+                            <h3 class="text-center my-3">Exam for {{ course.name }}</h3>
+                            
+                            <form id="exam-form" action="" method="post">
+                                {% csrf_token %}
+                                
+                                {% for question in course.question_set.all %}
+                                    <div class="card my-3">
+                                        <div class="card-header bg-info text-white">
+                                            <h5 class="mb-0">Question {{ forloop.counter }}: {{ question.question_text }}</h5>
+                                            <span class="badge badge-light float-right">{{ question.grade }} Points</span>
+                                        </div>
+                                        <div class="card-body">
+                                            {% for choice in question.choice_set.all %}
+                                                <div class="form-check my-2">
+                                                    <label class="form-check-label">
+                                                        <input type="checkbox" name="choice_{{ question.id }}" class="form-check-input" value="{{ choice.id }}">
+                                                        {{ choice.choice_text }}
+                                                    </label>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% empty %}
+                                    <p class="text-muted text-center">There are no exam questions assigned to this course yet.</p>
+                                {% endfor %}
+
+                                {% if course.question_set.all %}
+                                    <button type="submit" class="btn btn-success btn-lg btn-block mt-4" disabled>Submit Exam (Coming Next Lab)</button>
+                                {% endif %}
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            </div>
 </body>
 </html>
