@@ -95,6 +95,49 @@ class Enrollment(models.Model):
     rating = models.FloatField(default=5.0)
 
 
+
+
+
+
+
+class Question(models.Model):
+    # Many-to-One relationship with Course (A course has multiple exam questions)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    question_text = models.CharField(max_length=500, default="Enter your question here")
+    grade = models.IntegerField(default=1) # Point value for this question
+
+    def __str__(self):
+        return self.question_text
+
+    # Method to calculate if the learner gets the score of the question
+    def is_get_score(self, selected_ids):
+        all_answers = self.choice_set.filter(is_correct=True).count()
+        selected_correct = self.choice_set.filter(is_correct=True, id__in=selected_ids).count()
+        if all_answers == selected_correct:
+            return True
+        else:
+            return False
+
+
+class Choice(models.Model):
+    # Many-to-One relationship with Question (A question has multiple multiple-choice options)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    choice_text = models.CharField(max_length=200, default="Enter choice text here")
+    is_correct = models.BooleanField(default=False) # True if this is a right answer
+
+    def __str__(self):
+        return self.choice_text
+
+
+class Submission(models.Model):
+    # One enrollment could have multiple submissions
+    enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE)
+    # A submission stores multiple selected choices
+    choices = models.ManyToManyField(Choice)
+
+    def __str__(self):
+        return f"Submission {self.id} for {self.enrollment}"
+
 # One enrollment could have multiple submission
 # One submission could have multiple choices
 # One choice could belong to multiple submissions
